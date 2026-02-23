@@ -3,70 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>牛牛计算器</title>
+<title>🐂 牛牛计算器</title>
 
 <style>
 
 body{
-margin:0;
-background:#0b172a;
+background:#0f172a;
 font-family:Arial;
+margin:0;
 color:white;
 text-align:center;
 }
 
 header{
-font-size:24px;
-padding:15px;
+font-size:28px;
+padding:20px;
+font-weight:bold;
 background:#111827;
+box-shadow:0 3px 10px rgba(0,0,0,0.5);
 }
 
 .container{
-max-width:500px;
-margin:auto;
 padding:20px;
+max-width:520px;
+margin:auto;
 }
 
 .cards{
+margin:25px 0;
 display:flex;
 justify-content:center;
-gap:10px;
-margin:20px 0;
+gap:12px;
 flex-wrap:wrap;
 }
 
 .card{
-width:60px;
-height:80px;
 background:white;
 color:black;
-border-radius:10px;
+width:65px;
+height:85px;
+border-radius:12px;
 display:flex;
 align-items:center;
 justify-content:center;
 font-size:22px;
 font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,0.5);
 }
 
 .result{
 font-size:40px;
-color:#ffd700;
+font-weight:bold;
 margin:20px 0;
+color:#facc15;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:12px;
+margin-top:20px;
+}
+
+button{
+padding:16px;
+font-size:18px;
+border:none;
+border-radius:12px;
+background:#1f2937;
+color:white;
+}
+
+button:active{
+transform:scale(0.95);
+background:#374151;
 }
 
 .control{
+margin-top:15px;
 display:flex;
 gap:10px;
-margin-bottom:20px;
 }
 
 .control button{
 flex:1;
-padding:15px;
-font-size:18px;
-border:none;
-border-radius:10px;
-color:white;
 }
 
 .del{
@@ -75,21 +95,6 @@ background:#ef4444;
 
 .reset{
 background:#f59e0b;
-}
-
-.keyboard{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:10px;
-}
-
-.key{
-padding:18px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#1f2937;
-color:white;
 }
 
 </style>
@@ -107,12 +112,12 @@ color:white;
 输入5张牌
 </div>
 
+<div class="grid" id="keys"></div>
+
 <div class="control">
 <button class="del" onclick="delCard()">删除</button>
-<button class="reset" onclick="resetCards()">重置</button>
+<button class="reset" onclick="reset()">清空</button>
 </div>
-
-<div class="keyboard" id="keyboard"></div>
 
 </div>
 
@@ -120,127 +125,73 @@ color:white;
 
 const values=["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
 
-const keyboard=document.getElementById("keyboard")
+let cards=[]
+
 const cardsDiv=document.getElementById("cards")
 const result=document.getElementById("result")
-
-let cards=[]
+const keys=document.getElementById("keys")
 
 values.forEach(v=>{
 let b=document.createElement("button")
-b.className="key"
 b.innerText=v
-b.onclick=()=>addCard(v)
-keyboard.appendChild(b)
+b.onclick=()=>add(v)
+keys.appendChild(b)
 })
 
-function addCard(v){
+function render(){
+cardsDiv.innerHTML=""
+cards.forEach(c=>{
+let d=document.createElement("div")
+d.className="card"
+d.innerText=c
+cardsDiv.appendChild(d)
+})
+}
 
-if(cards.length>=5) return
-
+function add(v){
+if(cards.length>=5)return
 cards.push(v)
-
 render()
-
 calc()
-
 }
 
 function delCard(){
-
 cards.pop()
-
 render()
-
 result.innerText="输入5张牌"
-
 }
 
-function resetCards(){
-
+function reset(){
 cards=[]
-
 render()
-
 result.innerText="输入5张牌"
-
 }
 
-function render(){
-
-cardsDiv.innerHTML=""
-
-cards.forEach(c=>{
-
-let d=document.createElement("div")
-
-d.className="card"
-
-d.innerText=c
-
-cardsDiv.appendChild(d)
-
-})
-
-}
-
-function value(v){
-
-if(v==="A") return 1
-if(v==="J"||v==="Q"||v==="K") return 10
+function val(v){
+if(v=="A") return 1
+if(v=="J"||v=="Q"||v=="K") return 10
 return parseInt(v)
-
 }
 
-function expand(nums){
-
-let list=[[]]
-
-nums.forEach(n=>{
-
-let temp=[]
-
-if(n===3||n===6){
-
-list.forEach(a=>{
-temp.push([...a,3])
-temp.push([...a,6])
-})
-
-}else{
-
-list.forEach(a=>{
-temp.push([...a,n])
-})
-
-}
-
-list=temp
-
-})
-
-return list
-
+function transform(x){
+if(x===3) return 6
+if(x===6) return 3
+return x
 }
 
 function calc(){
 
 if(cards.length<5) return
 
-let nums=cards.map(value)
-
-let all=expand(nums)
-
 let best=-1
-let niuniu=false
 
-all.forEach(arr=>{
+let nums=cards.map(v=>transform(val(v)))
 
 for(let i=0;i<3;i++){
 for(let j=i+1;j<4;j++){
 for(let k=j+1;k<5;k++){
 
-let sum=arr[i]+arr[j]+arr[k]
+let sum=nums[i]+nums[j]+nums[k]
 
 if(sum%10===0){
 
@@ -248,36 +199,26 @@ let rest=0
 
 for(let x=0;x<5;x++){
 if(x!==i&&x!==j&&x!==k){
-rest+=arr[x]
+rest+=nums[x]
 }
 }
 
 let niu=rest%10
+if(niu===0) niu=10
 
-if(niu===0){
-niuniu=true
-}
-
-if(niu>best){
-best=niu
-}
+best=Math.max(best,niu)
 
 }
 }
 }
 }
 
-})
-
-if(niuniu){
-result.innerText="🐂 牛牛"
-return
-}
-
-if(best>=0){
-result.innerText="牛 "+best
-}else{
+if(best===-1){
 result.innerText="没牛"
+}else if(best===10){
+result.innerText="🐂 牛牛"
+}else{
+result.innerText="牛 "+best
 }
 
 }

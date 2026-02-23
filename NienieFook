@@ -1,1 +1,239 @@
-index.html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>牛牛计算器</title>
+
+<style>
+body{
+margin:0;
+background:#0b172a;
+font-family:Arial;
+color:white;
+text-align:center;
+}
+
+header{
+font-size:24px;
+padding:15px;
+background:#111827;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+padding:20px;
+}
+
+.cards{
+display:flex;
+justify-content:center;
+gap:10px;
+margin:20px 0;
+flex-wrap:wrap;
+}
+
+.card{
+width:60px;
+height:80px;
+background:white;
+color:black;
+border-radius:10px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+font-weight:bold;
+}
+
+.result{
+font-size:40px;
+color:#ffd700;
+margin:20px 0;
+}
+
+.control{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.control button{
+flex:1;
+padding:15px;
+font-size:18px;
+border:none;
+border-radius:10px;
+color:white;
+}
+
+.del{background:#ef4444;}
+.reset{background:#f59e0b;}
+
+.keyboard{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+}
+
+.key{
+padding:18px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#1f2937;
+color:white;
+}
+</style>
+</head>
+
+<body>
+
+<header>🐂 牛牛计算器</header>
+
+<div class="container">
+
+<div class="cards" id="cards"></div>
+
+<div class="result" id="result">
+输入5张牌
+</div>
+
+<div class="control">
+<button class="del" onclick="delCard()">删除</button>
+<button class="reset" onclick="resetCards()">重置</button>
+</div>
+
+<div class="keyboard" id="keyboard"></div>
+
+</div>
+
+<script>
+
+const values=["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
+
+const keyboard=document.getElementById("keyboard")
+const cardsDiv=document.getElementById("cards")
+const result=document.getElementById("result")
+
+let cards=[]
+
+values.forEach(v=>{
+let b=document.createElement("button")
+b.className="key"
+b.innerText=v
+b.onclick=()=>addCard(v)
+keyboard.appendChild(b)
+})
+
+function addCard(v){
+if(cards.length>=5)return
+cards.push(v)
+render()
+calc()
+}
+
+function delCard(){
+cards.pop()
+render()
+result.innerText="输入5张牌"
+}
+
+function resetCards(){
+cards=[]
+render()
+result.innerText="输入5张牌"
+}
+
+function render(){
+cardsDiv.innerHTML=""
+cards.forEach(c=>{
+let d=document.createElement("div")
+d.className="card"
+d.innerText=c
+cardsDiv.appendChild(d)
+})
+}
+
+function value(v){
+if(v==="A") return 1
+if(v==="J"||v==="Q"||v==="K") return 10
+return parseInt(v)
+}
+
+function expand(nums){
+let list=[[]]
+
+nums.forEach(n=>{
+let temp=[]
+if(n===3||n===6){
+list.forEach(a=>{
+temp.push([...a,3])
+temp.push([...a,6])
+})
+}else{
+list.forEach(a=>{
+temp.push([...a,n])
+})
+}
+list=temp
+})
+return list
+}
+
+function calc(){
+
+if(cards.length<5)return
+
+let nums=cards.map(value)
+let all=expand(nums)
+
+let best=-1
+let niuniu=false
+
+all.forEach(arr=>{
+for(let i=0;i<3;i++){
+for(let j=i+1;j<4;j++){
+for(let k=j+1;k<5;k++){
+
+let sum=arr[i]+arr[j]+arr[k]
+
+if(sum%10===0){
+
+let rest=0
+
+for(let x=0;x<5;x++){
+if(x!==i&&x!==j&&x!==k){
+rest+=arr[x]
+}
+}
+
+let niu=rest%10
+
+if(niu===0) niuniu=true
+if(niu>best) best=niu
+
+}
+}
+}
+}
+})
+
+if(niuniu){
+result.innerText="🐂 牛牛"
+return
+}
+
+if(best>=0){
+result.innerText="牛 "+best
+}else{
+result.innerText="没牛"
+}
+
+}
+
+</script>
+
+</body>
+</html>

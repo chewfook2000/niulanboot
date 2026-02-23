@@ -3,67 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>🐂 牛牛计算器</title>
+
+<link rel="manifest" href="manifest.json">
 
 <style>
 
 body{
-background:#0f172a;
-font-family:Arial;
 margin:0;
+font-family:Arial;
+background:#081428;
 color:white;
 text-align:center;
 }
 
 header{
-font-size:28px;
+background:#0f1c38;
 padding:20px;
+font-size:26px;
 font-weight:bold;
-background:#111827;
-box-shadow:0 3px 10px rgba(0,0,0,0.5);
+box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
 
 .container{
-padding:20px;
 max-width:520px;
 margin:auto;
+padding:20px;
 }
 
 .cards{
-margin:25px 0;
 display:flex;
 justify-content:center;
-gap:12px;
+gap:10px;
 flex-wrap:wrap;
+margin:25px 0;
 }
 
 .card{
+width:70px;
+height:90px;
 background:white;
 color:black;
-width:65px;
-height:85px;
 border-radius:12px;
 display:flex;
 align-items:center;
 justify-content:center;
 font-size:22px;
 font-weight:bold;
-box-shadow:0 4px 10px rgba(0,0,0,0.5);
+box-shadow:0 5px 12px rgba(0,0,0,0.5);
 }
 
 .result{
 font-size:40px;
-font-weight:bold;
+color:#ffd700;
 margin:20px 0;
-color:#facc15;
+font-weight:bold;
 }
 
 .grid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
-gap:12px;
-margin-top:20px;
+gap:10px;
 }
+
+button{
+padding:16px;
+border:none;
+border-radius:12px;
+background:#1e293b;
+color:white;
+font-size:18px;
+}
+
+button:active{
+transform:scale(0.95);
+}
+
+.control{
+margin-top:15px;
+display:flex;
+gap:10px;
+}
+
+.del{background:#ef4444;}
+.reset{background:#f59e0b;}
+.rule{background:#22c55e;}
+
+</style>
+</head>
+
+<body>
+
+<header>🐂 牛牛计算器</header>
+
+<div class="container">
+
+<div class="cards" id="cards"></div>
+
+<div class="result" id="result">输入5张牌</div>
+
+<div class="grid" id="keys"></div>
+
+<div class="control">
+<button class="del" onclick="delCard()">删除</button>
+<button class="reset" onclick="reset()">清空</button>
+<button class="rule" onclick="toggleRule()">3/6规则</button>
+</div>
+
+</div>
+
+<script>
+
+const values=["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
+
+let cards=[]
+let rule36=true
+
+const cardsDiv=document.getElementById("cards")
+const result=document.getElementById("result")
+const keys=document.getElementById("keys")
+
+values.forEach(v=>{
+let b=document.createElement("button")
+b.innerText=v
+b.onclick=()=>add(v)
+keys.appendChild(b)
+})
+
+function render(){
+cardsDiv.innerHTML=""
+cards.forEach(c=>{
+let d=document.createElement("div")
+d.className="card"
+d.innerText=c
+cardsDiv.appendChild(d)
+})
+}
+
+function add(v){
+if(cards.length>=5)return
+cards.push(v)
+render()
+calc()
+}
+
+function delCard(){
+cards.pop()
+render()
+calc()
+}
+
+function reset(){
+cards=[]
+render()
+result.innerText="输入5张牌"
+}
+
+function toggleRule(){
+rule36=!rule36
+alert("3/6玩法: "+(rule36?"开启":"关闭"))
+calc()
+}
+
+function val(v){
+if(v=="A") return 1
+if(v=="J"||v=="Q"||v=="K") return 10
+return parseInt(v)
+}
+
+function transform(x){
+if(!rule36) return x
+if(x===3) return 6
+if(x===6) return 3
+return x
+}
+
+function calc(){
+
+if(cards.length<5) return
+
+let nums=cards.map(v=>transform(val(v)))
+
+let best=-1
+
+for(let i=0;i<3;i++){
+for(let j=i+1;j<4;j++){
+for(let k=j+1;k<5;k++){
+
+let sum=nums[i]+nums[j]+nums[k]
+
+if(sum%10===0){
+
+let rest=0
+
+for(let x=0;x<5;x++){
+if(x!==i&&x!==j&&x!==k){
+rest+=nums[x]
+}
+}
+
+let niu=rest%10
+if(niu===0) niu=10
+
+best=Math.max(best,niu)
+
+}
+}
+}
+}
+
+if(best===-1){
+result.innerText="没牛"
+}else if(best===10){
+result.innerText="🐂 牛牛"
+}else{
+result.innerText="牛 "+best
+}
+
+}
+
+</script>
+
+</body>
+</html>
 
 button{
 padding:16px;
